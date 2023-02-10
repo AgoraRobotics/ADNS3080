@@ -5,7 +5,7 @@
 # Modified by Kristian Sloth Lauszus
 
 from serial import Serial, SerialException
-from Tkinter import Tk, Frame, StringVar, Button, Canvas, OptionMenu
+from tkinter import Tk, Frame, StringVar, Button, Canvas, OptionMenu
 from threading import Timer
 
 import serial.tools.list_ports
@@ -45,13 +45,13 @@ class App:
             ports = ['No serial ports found']
         self.comPortStr.set(ports[0])  # Set first port as default
 
-        comports = apply(OptionMenu, (frame, self.comPortStr) + tuple(ports))
+        comports = OptionMenu(frame, variable=self.comPortStr, value=ports)# + tuple(ports))
         comports.grid(row=0, column=0)
 
         self.baudrateStr = StringVar()
         self.baudrateStr.set('115200')
 
-        baudrates = apply(OptionMenu, (frame, self.baudrateStr) + tuple(Serial.BAUDRATES))
+        baudrates = OptionMenu(frame, variable=self.baudrateStr, value=Serial.BAUDRATES)
         baudrates.grid(row=0, column=1)
 
         button = Button(frame, text="Open", command=self.open)
@@ -113,7 +113,7 @@ class App:
         while self.ser and self.ser.isOpen() and self.ser.inWaiting() > 0:
             # Process the line read
             line = self.ser.readline()
-            if line.find("start") == 0:
+            if b"start" in line:
                 # print('Started reading image')
                 pixels = self.ser.read(self.num_pixels * self.num_pixels)
                 if len(pixels) == self.num_pixels * self.num_pixels:
@@ -122,7 +122,8 @@ class App:
                         col = 0
                         for p in pixels[row * self.num_pixels:(row + 1) * self.num_pixels]:
                             try:
-                                colour = ord(p)
+                                #colour = ord(p)
+                                colour = p
                             except TypeError:
                                 colour = 0
                             # print('Colour', colour)
@@ -152,7 +153,7 @@ class App:
                 self.canvas.delete(old_pixel)
                 del old_pixel
 
-            fill_colour = "#%02x%02x%02x" % (colour, colour, colour)
+            fill_colour = "#%02x%02x%02x" % ((int(colour),)*3)
             # Draw a new pixel and add to pixel_array
             new_pixel = self.canvas.create_rectangle(x*self.grid_size, y*self.grid_size, (x+1)*self.grid_size,
                                                      (y+1)*self.grid_size, fill=fill_colour)
