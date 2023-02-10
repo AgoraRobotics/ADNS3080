@@ -75,10 +75,11 @@ void setup() {
 }
 
 void loop() {
-#if 1
+#if 0
   updateSensor();
 #else
   Serial.write("start\n");
+  Serial.flush();
   printPixelData();
   Serial.flush();
   delay(250);
@@ -100,17 +101,19 @@ void printPixelData(void) {
       uint8_t regValue = spiRead(ADNS3080_FRAME_CAPTURE);
       if (isFirstPixel && !(regValue & 0x40)) {
         Serial.println(F("Failed to find first pixel"));
-        goto reset;
+//        goto reset;
       }
       isFirstPixel = false;
       uint8_t pixelValue = regValue << 2; // Only lower 6 bits have data
+//      Serial.print(pixelValue, HEX); Serial.print(' ');
       Serial.write(pixelValue);
     }
+//    Serial.println();
     Serial.flush();
   }
 
-reset:
-  reset(); // Hardware reset to restore sensor to normal operation
+//reset:
+//  reset(); // Hardware reset to restore sensor to normal operation
 }
 
 void updateSensor(void) {
@@ -197,4 +200,3 @@ void spiRead(uint8_t reg, uint8_t *data, uint8_t length) {
   digitalWrite(SS_PIN, HIGH);
   SPI.endTransaction();
 }
-
